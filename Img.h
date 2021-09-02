@@ -382,99 +382,72 @@ void Smoothing_filter() {
 
 
 
-void G_F(cv::Mat& img, int x, int y) { //Gaussian_Filter //TODO:To correct
-	int count = 0, second_count = 0, third_count = 0, dim = 5;
-	double kernel[5][5] = { 0 }, arr_B[5][5] = { 0 }, arr_G[5][5] = { 0 }, arr_R[5][5] = { 0 }, s_B = 0, s_G = 0, s_R = 0, mean = dim / 2, sigma = 1, sum = 0;
+void G_F(cv::Mat& img, cv::Mat& image, int y, int x) { //Gaussian_Filter //TODO:To correct
+	int count = 0, x1 = x, y1 = y;
+	double dim = 5, kernel[5][5] = { 0 }, arr_B[5][5] = { 0 }, arr_G[5][5] = { 0 }, arr_R[5][5] = { 0 }, s_B = 0, s_G = 0, s_R = 0, mean = dim / 2, sigma = 1, sum = 0;
 	const double PI = 3.1415;
+
 	cv::Vec3b& pix = img.at<cv::Vec3b>(0, 0);
 
-	for (int i = 0; i < dim; i++) {
-		for (int j = 0; j < dim; j++) {
-			kernel[i][j] = exp(-0.5 * pow((i - mean) / sigma, 2) + pow((j - mean) / sigma, 2)) / 2 * PI * sigma * sigma;
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
+			kernel[i][j] = exp(-0.5 * (((i - mean) / sigma) * ((i - mean) / sigma)) + (((j - mean) / sigma) * ((j - mean) / sigma))) / 2 * PI * sigma * sigma;
 			sum += kernel[i][j];
 		}
 	}
-	for (int i = 0; i < dim; i++) {
-		for (int j = 0; j < dim; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			kernel[i][j] /= sum;
 		}
 	}
 
-	if (x == img.rows) {
-		second_count = img.rows - 1;
-	}
-	else {
-		second_count = x;
-	}
-
-	if (y == img.cols) {
-		third_count = img.cols - 1;
-	}
-	else {
-		third_count = y;
-	}
-
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
-			pix = img.at<cv::Vec3b>(second_count, third_count);
+			pix = img.at<cv::Vec3b>(y1 >= img.rows ? img.rows - 1 : y1, 
+									x1 >= img.cols ? img.cols - 1 : x1);
 			arr_B[i][j] = pix[0];
 			arr_G[i][j] = pix[1];
 			arr_R[i][j] = pix[2];
+			x1++;
 		}
-		second_count++, third_count++;
-		if (second_count == img.rows) {
-			second_count = img.rows - 1;
-		}
-		if (third_count == img.cols) {
-			third_count = img.cols - 1;
-		}
+		x1 = x;
+		y1++;
 	}
+
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
 			arr_B[i][j] *= kernel[i][j];
-			arr_G[i][j] *= kernel[i][j];
-			arr_R[i][j] *= kernel[i][j];
-		}
-	}
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
 			s_B += arr_B[i][j];
+			
+			arr_G[i][j] *= kernel[i][j];
 			s_G += arr_G[i][j];
+
+			arr_R[i][j] *= kernel[i][j];
 			s_R += arr_R[i][j];
 		}
 	}
 
-	if (x == img.rows) {
-		second_count = img.rows - 1;
-	}
-	else {
-		second_count = x;
-	}
-
-	if (y == img.cols) {
-		third_count = img.cols - 1;
-	}
-	else {
-		third_count = y;
-	}
-
-	img.at<cv::Vec3b>(second_count, third_count)[0] = s_B;
-	img.at<cv::Vec3b>(second_count, third_count)[1] = s_G;
-	img.at<cv::Vec3b>(second_count, third_count)[2] = s_R;
+	image.at<cv::Vec3b>(y >= img.rows ? img.rows - 1: y,
+						x >= img.cols ? img.cols - 1 : x)[0] = s_B;
+	image.at<cv::Vec3b>(y >= img.rows ? img.rows - 1 : y,
+						x >= img.cols ? img.cols - 1 : x)[1] = s_G;
+	image.at<cv::Vec3b>(y >= img.rows ? img.rows - 1 : y,
+						x >= img.cols ? img.cols - 1 : x)[2] = s_R;
 }
 
 void Gaussian_filter() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
-		for (int x = 0; x < img.rows; x++) {
-			for (int y = 0; y < img.cols; y++) {
-				G_F(img, x, y);
+		cv::Mat image = img.clone();
+		for (int y = 0; y < img.rows; y++) {
+			for (int x = 0; x < img.cols; x++) {
+				G_F(img, image, y, x);
 			}
 		}
 		cv::namedWindow("image", cv::WINDOW_NORMAL);
-		cv::imshow("image", img);
+		cv::imshow("image", image);
 		cv::waitKey(1000);
-		save_file(img);
+		save_file(image);
 		cv::destroyWindow("image");
 	}
 	else {
