@@ -8,6 +8,7 @@
 #include <tuple>
 #include <random>
 #include <cstring>
+#include <numeric>
 
 
 
@@ -15,12 +16,12 @@ void text_output() {
 	std::cout << "\nEnter the number corresponding to the menu item you are interested." << std::endl << std::endl;
 	std::cout << "1 -> Notes." << std::endl;
 	std::cout << "2 -> Salt Pepper noize." << std::endl;
-	std::cout << "3 -> Gaussian noise." << std::endl;
+	std::cout << "3 -> *Gaussian noise(In development).*" << std::endl;
 	std::cout << "4 -> Smoothing filter." << std::endl;
 	std::cout << "5 -> Gaussian filter." << std::endl;
 	std::cout << "6 -> Median filter." << std::endl;
 	std::cout << "7 -> Border selection filter(Sobel)." << std::endl;
-	std::cout << "8 -> Equalizing histogram." << std::endl;
+	std::cout << "8 -> *Equalizing histogram(In development).*" << std::endl;
 	std::cout << "9 -> Displaying the main menu and cleaning the console." << std::endl;
 	std::cout << "0 -> Exit." << std::endl;
 }
@@ -38,7 +39,7 @@ void Notes() {
 	std::cout << "\n3 - Noise, where you can specify the probability of both pixels occurring\n\n(the probability for white is different from the probability for black);" << std::endl;
 	std::cout << "\nAfter selecting a function (and entering the desired values, if required), a file selection window will open.\nSelect the file you want and wait." << std::endl;
 	std::cout << "\nAfter that, a window with the result will open, and a second later a window will appear with the saving of the file." << std::endl;
-	std::cout << "\n\n3 - Gaussian noise:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
+	std::cout << "\n\n3 - In development." << std::endl;
 	std::cout << "\n\n4 - Smoothing_filter:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
 	std::cout << "\n\n5 - Gaussian filter:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
 	std::cout << "\n\n6 - Median filter:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
@@ -133,8 +134,8 @@ void Salt_Pepper() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
 		int numb_o_w, numb_o_b, count_w, count_b;
-		srand(time(NULL));
-		for (auto i = 0; i < img.rows; i++) {
+		srand(time(0));
+		for (int i = 0; i < img.rows; i++) {
 			count_w = rand() % static_cast<int>(img.cols * 0.1);
 			count_b = rand() % static_cast<int>(img.cols * 0.1);
 			while (count_w > 0 || count_b > 0) {
@@ -164,9 +165,9 @@ void Salt_Pepper(double prob) { //prob is pixels probability
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
 		int numb_o_w, numb_o_b, count_w, count_b;
-		srand(time(NULL));
+		srand(time(0));
 		if (Comparison(prob)) {
-			for (auto i = 0; i < img.rows; i++) {
+			for (int i = 0; i < img.rows; i++) {
 				count_w = rand() % static_cast<int>(((img.cols * prob) < 1) ? 1 : (img.cols * prob));
 				count_b = rand() % static_cast<int>(((img.cols * prob) < 1) ? 1 : (img.cols * prob));
 				while (count_w > 0 || count_b > 0) {
@@ -197,9 +198,9 @@ void Salt_Pepper(double prob_w, double prob_b) { //prob_f_w(b) is probability of
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
 		int numb_o_w, numb_o_b, count_w, count_b;
-		srand(time(NULL));
+		srand(time(0));
 		if (!Comparison(prob_w) && Comparison(prob_b)) {
-			for (auto i = 0; i < img.rows; i++) {
+			for (int i = 0; i < img.rows; i++) {
 				count_b = rand() % static_cast<int>(((img.cols * prob_b) < 1) ? 1 : (img.cols * prob_b));
 				while (count_b > 0) {
 					numb_o_b = rand() % img.cols;
@@ -211,7 +212,7 @@ void Salt_Pepper(double prob_w, double prob_b) { //prob_f_w(b) is probability of
 			}
 		}
 		else if (Comparison(prob_w) && !Comparison(prob_b)) {
-			for (auto i = 0; i < img.rows; i++) {
+			for (int i = 0; i < img.rows; i++) {
 				count_w = rand() % static_cast<int>(((img.cols * prob_w) < 1) ? 1 : (img.cols * prob_w));
 				while (count_w > 0) {
 					numb_o_w = rand() % img.cols;
@@ -224,7 +225,7 @@ void Salt_Pepper(double prob_w, double prob_b) { //prob_f_w(b) is probability of
 			}
 		}
 		else {
-			for (auto i = 0; i < img.rows; i++) {
+			for (int i = 0; i < img.rows; i++) {
 				count_w = rand() % static_cast<int>(((img.cols * prob_w) < 1) ? 1 : (img.cols * prob_w));
 				count_b = rand() % static_cast<int>(((img.cols * prob_b) < 1) ? 1 : (img.cols * prob_b));
 				while (count_w > 0 || count_b > 0) {
@@ -300,82 +301,30 @@ void Selecting_Salt_Pepper() { //Selecting a Salt&Pepper noise variation
 
 
 
-double* n_d() { // Normal distribution
-	int dim = 5; // dim is dimensions
-	const double PI = 3.1415;
-	double mean = dim / 2, sigma = 1;
-	double kernel[5][5], sum = 0;
-	for (unsigned int i = 0; i < dim; i++) {
-		for (unsigned int j = 0; j < dim; j++) {
-			kernel[i][j] = exp(-0.5 * pow((i - mean) / sigma, 2) + pow((j - mean) / sigma, 2)) / 2 * PI * sigma * sigma;
-			sum += kernel[i][j];
-		}
-	}
-	for (unsigned int i = 0; i < dim; i++) {
-		for (unsigned int j = 0; j < dim; j++) {
-			kernel[i][j] /= sum;
-		}
-	}
-	return *kernel;
-}
+/*void G_N(cv::Mat& img) { //Gaussian_Noise
+	int channels = img.channels();
+	double mean = 5, sigma = 2;
+	unsigned char* pixel_val = img.ptr(0);
+	auto new_pixel_val = *pixel_val;
+	std::default_random_engine generator;
+	std::normal_distribution<double> distribution(mean, sigma);
 
-void G_N(cv::Mat& img, int x, int y) { //Gaussian_Noise
-	int count = 0, second_count = 0;
-	cv::Vec3b& color = img.at<cv::Vec3b>(0, 0);
-	double arr_B[5][5], arr_G[5][5], arr_R[5][5], kernel[5][5];
-	double* ptr = n_d();
-	
-	srand(time(0));
-
-	for (unsigned int i = 0; i < 5; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
-			kernel[i][j] = *ptr;
-			ptr++;
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			for (int c = 0; c < channels; c++) {
+				pixel_val = img.ptr(i) + (j * channels) + c;
+				new_pixel_val = *pixel_val + distribution(generator);
+				*pixel_val = new_pixel_val > 255 ? 255 : new_pixel_val < 0 ? 0 : new_pixel_val;
+			}
 		}
-	}
-
-	if (x >= img.rows - 9) {
-		x = img.rows - 10;
-	}
-	if (y >= img.cols - 9) {
-		y = img.cols - 10;
-	}
-
-	for (unsigned int i = x; i < x + 5; i++) {
-		for (unsigned int j = y; j < y + 5; j++) {
-			color = img.at<cv::Vec3b>(i, j);
-			arr_B[count][second_count] = color[0];
-			arr_G[count][second_count] = color[1];
-			arr_R[count][second_count] = color[2];
-			second_count++;
-		}
-		count++;
 	}
 	
-	count = x, second_count = y;
-
-	for (unsigned int i = 0; i < 5; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
-			arr_B[i][j] /= kernel[rand() % 5][rand() % 5] / 1000;
-			arr_G[i][j] /= kernel[rand() % 5][rand() % 5] / 1000;
-			arr_R[i][j] /= kernel[rand() % 5][rand() % 5] / 1000;
-			img.at<cv::Vec3b>(count, second_count)[0] = arr_B[i][j];
-			img.at<cv::Vec3b>(count, second_count)[1] = arr_G[i][j];
-			img.at<cv::Vec3b>(count, second_count)[2] = arr_R[i][j];
-			second_count++;
-		}
-		count++;
-	}
 }
 
 void Gaussian_noise() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
-		for (unsigned int x = 0; x < img.rows - 100; x++) {
-			for (unsigned int y = 0; y < img.cols - 100; y++) {
-				G_N(img, x, y);
-			}
-		}
+		G_N(img);
 		cv::namedWindow("image", cv::WINDOW_NORMAL);
 		cv::imshow("image", img);
 		cv::waitKey(1000);
@@ -385,15 +334,14 @@ void Gaussian_noise() {
 	else {
 		text_output();
 	}
-}
+}*/
 
 
 
 void mean(cv::Mat& img, int x, int y) {
-	int count = 0;
-	double mean_B, mean_G, mean_R, arr_B[9], arr_G[9], arr_R[9];
-	for (unsigned int i = x; i < x + 3; i++) {
-		for (unsigned int j = y; j < y + 3; j++) {
+	int count = 0, mean_B, mean_G, mean_R, arr_B[9] = { 0 }, arr_G[9] = { 0 }, arr_R[9] = { 0 };
+	for (int i = x; i < x + 3; i++) {
+		for (int j = y; j < y + 3; j++) {
 			arr_B[count] = img.at<cv::Vec3b>(i, j)[0];
 			arr_G[count] = img.at<cv::Vec3b>(i, j)[1];
 			arr_R[count] = img.at<cv::Vec3b>(i, j)[2];
@@ -404,8 +352,8 @@ void mean(cv::Mat& img, int x, int y) {
 	mean_G = (arr_G[0] + arr_G[1] + arr_G[2] + arr_G[3] + arr_G[4] + arr_G[5] + arr_G[6] + arr_G[7] + arr_G[8]) / 9;
 	mean_R = (arr_R[0] + arr_R[1] + arr_R[2] + arr_R[3] + arr_R[4] + arr_R[5] + arr_R[6] + arr_R[7] + arr_R[8]) / 9;
 
-	for (unsigned int i = x; i < x + 3; i++) {
-		for (unsigned int j = y; j < y + 3; j++) {
+	for (int i = x; i < x + 3; i++) {
+		for (int j = y; j < y + 3; j++) {
 			img.at<cv::Vec3b>(i, j)[0] = mean_B;
 			img.at<cv::Vec3b>(i, j)[1] = mean_G;
 			img.at<cv::Vec3b>(i, j)[2] = mean_R;
@@ -416,8 +364,8 @@ void mean(cv::Mat& img, int x, int y) {
 void Smoothing_filter() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
-		for (unsigned int x = 0; x < img.rows - 2; x++) {
-			for (unsigned int y = 0; y < img.cols - 2; y++) {
+		for (int x = 0; x < img.rows - 2; x++) {
+			for (int y = 0; y < img.cols - 2; y++) {
 				mean(img, x, y);
 			}
 		}
@@ -434,16 +382,21 @@ void Smoothing_filter() {
 
 
 
-void G_F(cv::Mat& img, int x, int y) { //Gaussian_Filter
+void G_F(cv::Mat& img, int x, int y) { //Gaussian_Filter //TODO:To correct
+	int count = 0, second_count = 0, third_count = 0, dim = 5;
+	double kernel[5][5] = { 0 }, arr_B[5][5] = { 0 }, arr_G[5][5] = { 0 }, arr_R[5][5] = { 0 }, s_B = 0, s_G = 0, s_R = 0, mean = dim / 2, sigma = 1, sum = 0;
+	const double PI = 3.1415;
 	cv::Vec3b& pix = img.at<cv::Vec3b>(0, 0);
-	int count = 0, second_count = 0, third_count = 0;
-	double kernel[5][5], arr_B[5][5], arr_G[5][5], arr_R[5][5], s_B = 0, s_G = 0, s_R = 0;
-	double* ptr = n_d();
 
-	for (unsigned int i = 0; i < 5; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
-			kernel[i][j] = *ptr;
-			ptr++;
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			kernel[i][j] = exp(-0.5 * pow((i - mean) / sigma, 2) + pow((j - mean) / sigma, 2)) / 2 * PI * sigma * sigma;
+			sum += kernel[i][j];
+		}
+	}
+	for (int i = 0; i < dim; i++) {
+		for (int j = 0; j < dim; j++) {
+			kernel[i][j] /= sum;
 		}
 	}
 
@@ -461,8 +414,8 @@ void G_F(cv::Mat& img, int x, int y) { //Gaussian_Filter
 		third_count = y;
 	}
 
-	for (unsigned int i = 0; i < 5; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			pix = img.at<cv::Vec3b>(second_count, third_count);
 			arr_B[i][j] = pix[0];
 			arr_G[i][j] = pix[1];
@@ -476,15 +429,15 @@ void G_F(cv::Mat& img, int x, int y) { //Gaussian_Filter
 			third_count = img.cols - 1;
 		}
 	}
-	for (unsigned int i = 0; i < 5; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			arr_B[i][j] *= kernel[i][j];
 			arr_G[i][j] *= kernel[i][j];
 			arr_R[i][j] *= kernel[i][j];
 		}
 	}
-	for (unsigned int i = 0; i < 5; i++) {
-		for (unsigned int j = 0; j < 5; j++) {
+	for (int i = 0; i < 5; i++) {
+		for (int j = 0; j < 5; j++) {
 			s_B += arr_B[i][j];
 			s_G += arr_G[i][j];
 			s_R += arr_R[i][j];
@@ -513,8 +466,8 @@ void G_F(cv::Mat& img, int x, int y) { //Gaussian_Filter
 void Gaussian_filter() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
-		for (unsigned int x = 0; x < img.rows; x++) {
-			for (unsigned int y = 0; y < img.cols; y++) {
+		for (int x = 0; x < img.rows; x++) {
+			for (int y = 0; y < img.cols; y++) {
 				G_F(img, x, y);
 			}
 		}
@@ -531,12 +484,12 @@ void Gaussian_filter() {
 
 
 
-std::tuple <int, int, int> median(cv::Mat& img, unsigned int i, unsigned int j) { //Calculating the median
-	int count = 0, mean_B = 0, mean_G = 0, mean_R = 0, arr_B[9], arr_G[9], arr_R[9];
+std::tuple <int, int, int> median(cv::Mat& img, int i, int j) { //Calculating the median
+	int count = 0, mean_B = 0, mean_G = 0, mean_R = 0, arr_B[9] = { 0 }, arr_G[9] = { 0 }, arr_R[9] = { 0 };
 	cv::Vec3b& color = img.at<cv::Vec3b>(0, 0);
 	
-	for (unsigned int x = i; x < i + 3; x++) {
-		for (unsigned int y = j; y < j + 3; y++) {
+	for (int x = i; x < i + 3; x++) {
+		for (int y = j; y < j + 3; y++) {
 			color = img.at<cv::Vec3b>(x, y);
 			arr_B[count] = color[0];
 			arr_G[count] = color[1];
@@ -545,8 +498,8 @@ std::tuple <int, int, int> median(cv::Mat& img, unsigned int i, unsigned int j) 
 		}
 	}
 	
-	for (unsigned int g = 0; g < 9; g++) {
-		for (unsigned int h = 0; h < 9; h++) {
+	for (int g = 0; g < 9; g++) {
+		for (int h = 0; h < 9; h++) {
 			if (arr_B[g] < arr_B[h]) {
 				std::swap(arr_B[g], arr_B[h]);
 			}
@@ -591,8 +544,8 @@ void Median_filter() {
 	int mean_B, mean_G, mean_R;
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
-		for (unsigned int x = 0; x < img.rows - 2; x++) {
-			for (unsigned int y = 0; y < img.cols - 2; y++) {
+		for (int x = 0; x < img.rows - 2; x++) {
+			for (int y = 0; y < img.cols - 2; y++) {
 				std::tuple <int, int, int> tupl(median(img, x, y));
 				mean_B = std::get<0>(tupl), mean_G = std::get<1>(tupl), mean_R = std::get<2>(tupl);
 				img.at<cv::Vec3b>(x + 1, y + 1)[0] = mean_B;
@@ -613,61 +566,55 @@ void Median_filter() {
 }
 
 
-void Sobel(cv::Mat& img, int x, int y) {
-	int count = x, second_count = y, third_count = 0, fourth_count = 0;
-	double kernel_f[3][3] = { {-1, 2, -1},
-							  {0, 0, 0},
-							  {1, 2, 1} },
 
-		   kernel_s[3][3] = { {-1, 0, 1},
-							  {-2, 0, 2},
-							  {-1, 0, 1} },
-			arr_P[3][3], Gx, Gy, f;
+void Sobel(cv::Mat& img, cv::Mat& image, int x, int y) {
+	int count = 0, second_count = 0;
+	double arr_P[3][3], Gx, Gy, f; 
+	for (int i = x - 1; i < x + 2; i++) {
+		for (int j = y - 1; j < y + 2; j++) {
+			arr_P[count][second_count] = img.at<uchar>(i < 0 ? 0 : i >= img.rows ? img.rows - 1 : i,
+													   j < 0 ? 0 : j >= img.cols ? img.cols - 1 : j);
+			second_count++;
+		}
+		second_count = 0;
+		count++;
+	}
 
-	for (unsigned int i = x; i < x + 3; i++) {
-		if (i >= img.rows) {
-			i = img.rows - 1;
-		}
-		for (unsigned int j = y; j < y + 3; j++) {
-			if (j >= img.cols) {
-				j = img.cols - 1;
-			}
-			arr_P[third_count][fourth_count] = img.at<uchar>(i, j);
-			fourth_count++;
-		}
-		third_count++;
-	}
-	
-	Gx = (kernel_f[2][0] * arr_P[2][0] + kernel_f[2][1] * arr_P[2][1] + kernel_f[2][2] * arr_P[2][2]) - (kernel_f[0][0] * arr_P[0][0] + kernel_f[0][1] * arr_P[0][1] + kernel_f[0][2] * arr_P[0][2]);
-	Gy = (kernel_f[0][2] * arr_P[0][2] + kernel_f[1][2] * arr_P[1][2] + kernel_f[2][2] * arr_P[2][2]) - (kernel_f[0][0] * arr_P[0][0] + kernel_f[1][0] * arr_P[1][0] + kernel_f[2][0] * arr_P[2][0]);
-	f = sqrt(pow(Gx, 2) + pow(Gy, 2));
-	
-	if (count >= img.rows) {
-		count = img.rows - 1;
-	}
-	if (second_count >= img.cols) {
-		second_count = img.cols - 1;
-	}
-	
-	img.at<uchar>(count, second_count) = f;
+	Gy = (arr_P[0][2] + 2 * arr_P[1][2] + arr_P[2][2]) - (arr_P[0][0] + 2 * arr_P[1][0] + arr_P[2][0]);
+	Gx = (arr_P[2][0] + 2 * arr_P[2][1] + arr_P[2][2]) - (arr_P[0][0] + 2 * arr_P[0][1] + arr_P[0][2]);
+	f = sqrt(Gx * Gx + Gy * Gy);
+
+	image.at<uchar>(x, y) = f;
 }
-
 
 void Border_selection_filter_Sobel() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_GRAYSCALE);
 	if (img.data) {
-		for (unsigned int i = 0; i < img.rows - 2; i++) {
-			for (unsigned int j = 0; j < img.cols - 2; j++) {
-				Sobel(img, i, j);
+		cv::Mat image = img.clone();
+		for (int i = 0; i < img.rows; i++) {
+			for (int j = 0; j < img.cols; j++) {
+				Sobel(img, image, i, j);
 			}
 		}
 		cv::namedWindow("image", cv::WINDOW_NORMAL);
-		cv::imshow("image", img);
+		cv::imshow("image", image);
 		cv::waitKey(1000);
-		save_file(img);
+		save_file(image);
 		cv::destroyWindow("image");
 	}
 	else {
 		text_output();
 	}
 }
+
+
+
+/*void Equalizing_histogram() {
+	cv::Mat img = cv::imread(open_file(), cv::IMREAD_GRAYSCALE);
+	if (img.data) {
+		
+	}
+	else {
+		text_output();
+	}
+}*/

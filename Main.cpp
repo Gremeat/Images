@@ -19,7 +19,7 @@ int main() {
 			break;
 
 		case 3:
-			Gaussian_noise();
+			//Gaussian_noise();
 			break;
 
 		case 4:
@@ -36,12 +36,11 @@ int main() {
 
 		case 7:
 			Border_selection_filter_Sobel();
-			std::cout << "7" << std::endl;
+			//std::cout << "7" << std::endl;
 			break;
 
 		case 8:
 			//Equalizing_histogram();
-			std::cout << "8" << std::endl;
 			break;
 
 		case 9:
