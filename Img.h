@@ -382,7 +382,7 @@ void Smoothing_filter() {
 
 
 
-void G_F(cv::Mat& img, cv::Mat& image, int y, int x) { //Gaussian_Filter //TODO:To correct
+void G_F(cv::Mat& img, cv::Mat& image, int y, int x) {
 	int count = 0, x1 = x, y1 = y;
 	double dim = 5, kernel[5][5] = { 0 }, arr_B[5][5] = { 0 }, arr_G[5][5] = { 0 }, arr_R[5][5] = { 0 }, s_B = 0, s_G = 0, s_R = 0, mean = dim / 2, sigma = 1, sum = 0;
 	const double PI = 3.1415;
@@ -403,15 +403,15 @@ void G_F(cv::Mat& img, cv::Mat& image, int y, int x) { //Gaussian_Filter //TODO:
 
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
-			pix = img.at<cv::Vec3b>(y1 >= img.rows ? img.rows - 1 : y1, 
-									x1 >= img.cols ? img.cols - 1 : x1);
+			pix = img.at<cv::Vec3b>(y1 < 0 ? 0 : y1 >= img.rows ? img.rows - 1 : y1,
+				                    x1 < 0 ? 0 : x1 >= img.cols ? img.cols - 1 : x1);
 			arr_B[i][j] = pix[0];
 			arr_G[i][j] = pix[1];
 			arr_R[i][j] = pix[2];
-			x1++;
+			x1--;
 		}
 		x1 = x;
-		y1++;
+		y1--;
 	}
 
 	for (int i = 0; i < 5; i++) {
@@ -427,20 +427,20 @@ void G_F(cv::Mat& img, cv::Mat& image, int y, int x) { //Gaussian_Filter //TODO:
 		}
 	}
 
-	image.at<cv::Vec3b>(y >= img.rows ? img.rows - 1: y,
-						x >= img.cols ? img.cols - 1 : x)[0] = s_B;
-	image.at<cv::Vec3b>(y >= img.rows ? img.rows - 1 : y,
-						x >= img.cols ? img.cols - 1 : x)[1] = s_G;
-	image.at<cv::Vec3b>(y >= img.rows ? img.rows - 1 : y,
-						x >= img.cols ? img.cols - 1 : x)[2] = s_R;
+	image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+		                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[0] = s_B;
+	image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+		                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[1] = s_G;
+	image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+		                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[2] = s_R;
 }
 
 void Gaussian_filter() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
 	if (img.data) {
 		cv::Mat image = img.clone();
-		for (int y = 0; y < img.rows; y++) {
-			for (int x = 0; x < img.cols; x++) {
+		for (int y = img.rows; y >= 0; y--) {
+			for (int x = img.cols; x >= 0; x--) {
 				G_F(img, image, y, x);
 			}
 		}
