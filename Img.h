@@ -31,12 +31,12 @@ void text_output() {
 void Notes() {
 	int x;
 	system("CLS");
-	std::cout << "\nNotes:" << std::endl;
+	std::cout << "Notes:" << std::endl;
 	std::cout << "\n2 - Salt & Pepper:" << std::endl;
 	std::cout << "\nWhen you select this item, you will be offered a choice of 3 functions:" << std::endl;
-	std::cout << "\n1 - Self-contained noise, without entering any values;" << std::endl;
-	std::cout << "\n2 - Noise, where you can specify the probability of pixels occurring \n\n(the probability is the same for white and black);" << std::endl;
-	std::cout << "\n3 - Noise, where you can specify the probability of both pixels occurring\n\n(the probability for white is different from the probability for black);" << std::endl;
+	std::cout << "\nA) - Self-contained noise, without entering any values;" << std::endl;
+	std::cout << "\nB) - Noise, where you can specify the probability of pixels occurring \n\n(the probability is the same for white and black);" << std::endl;
+	std::cout << "\nC) - Noise, where you can specify the probability of both pixels occurring\n\n(the probability for white is different from the probability for black);" << std::endl;
 	std::cout << "\nAfter selecting a function (and entering the desired values, if required), a file selection window will open.\nSelect the file you want and wait." << std::endl;
 	std::cout << "\nAfter that, a window with the result will open, and a second later a window will appear with the saving of the file." << std::endl;
 	std::cout << "\n\n3 - Noise, where you are prompted to enter the mean and value for the standard deviation." << std::endl;
@@ -48,7 +48,7 @@ void Notes() {
 	std::cout << "\n\n!!! AFTER THE FILTER IS EXECUTED OR NOISE, A WINDOW WILL APPEAR IN WHICH A PICTURE WILL BE DISPLAYED FOR A SECOND.\n";
 	std::cout << "DO NOT NEED TO CLOSE IT, IT WILL BE CLOSED BY ITSELF AFTER SAVING THE FILE (OR REFUSING TO SAVE) !!!" << std::endl;
 	std::cout << "Also, DO NOT USE Cyrillic in paths and / or file names." << std::endl;
-	std::cout << "\n\n\nEnter 0 -> to go to the main menu." << std::endl;
+	std::cout << "\n\n\nEnter 0 -> to go to the main menu." << std::endl << std::endl;
 	std::cin >> x;
 	switch (x) {
 	case 0:
