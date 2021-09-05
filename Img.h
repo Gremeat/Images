@@ -16,7 +16,7 @@ void text_output() {
 	std::cout << "\nEnter the number corresponding to the menu item you are interested." << std::endl << std::endl;
 	std::cout << "1 -> Notes." << std::endl;
 	std::cout << "2 -> Salt Pepper noize." << std::endl;
-	std::cout << "3 -> *Gaussian noise(In development).*" << std::endl;
+	std::cout << "3 -> Gaussian noise." << std::endl;
 	std::cout << "4 -> Smoothing filter." << std::endl;
 	std::cout << "5 -> Gaussian filter." << std::endl;
 	std::cout << "6 -> Median filter." << std::endl;
@@ -39,7 +39,7 @@ void Notes() {
 	std::cout << "\n3 - Noise, where you can specify the probability of both pixels occurring\n\n(the probability for white is different from the probability for black);" << std::endl;
 	std::cout << "\nAfter selecting a function (and entering the desired values, if required), a file selection window will open.\nSelect the file you want and wait." << std::endl;
 	std::cout << "\nAfter that, a window with the result will open, and a second later a window will appear with the saving of the file." << std::endl;
-	std::cout << "\n\n3 - In development." << std::endl;
+	std::cout << "\n\n3 - Noise, where you are prompted to enter the mean and value for the standard deviation." << std::endl;
 	std::cout << "\n\n4 - Smoothing_filter:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
 	std::cout << "\n\n5 - Gaussian filter:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
 	std::cout << "\n\n6 - Median filter:\nThere is no way to enter your own values. You open the file with a window and wait, then save it." << std::endl;
@@ -73,7 +73,7 @@ bool Comparison(double prob) { //prob is pixels probability
 
 std::string open_file() {
 	OPENFILENAME open_file = {sizeof open_file};
-	wchar_t file[1024];
+	wchar_t file[1024] = { 0 };
 	file[0] = '\0';
 	open_file.lpstrFilter = L".*jpg, .*jpeg";
 	open_file.lpstrFile = file;
@@ -105,7 +105,7 @@ std::string open_file() {
 
 void save_file(cv::Mat& img) {
 		OPENFILENAME save_file = { sizeof save_file };
-		wchar_t file[1024];
+		wchar_t file[1024] = { 0 };
 		file[0] = '\0';
 		save_file.lpstrFilter = L".*jpg, .*jpeg";
 		save_file.lpstrFile = file;
@@ -301,40 +301,89 @@ void Selecting_Salt_Pepper() { //Selecting a Salt&Pepper noise variation
 
 
 
-/*void G_N(cv::Mat& img) { //Gaussian_Noise
-	int channels = img.channels();
-	double mean = 5, sigma = 2;
-	unsigned char* pixel_val = img.ptr(0);
-	auto new_pixel_val = *pixel_val;
-	std::default_random_engine generator;
-	std::normal_distribution<double> distribution(mean, sigma);
-
-	for (int i = 0; i < img.rows; i++) {
-		for (int j = 0; j < img.cols; j++) {
-			for (int c = 0; c < channels; c++) {
-				pixel_val = img.ptr(i) + (j * channels) + c;
-				new_pixel_val = *pixel_val + distribution(generator);
-				*pixel_val = new_pixel_val > 255 ? 255 : new_pixel_val < 0 ? 0 : new_pixel_val;
-			}
-		}
-	}
-	
-}
 
 void Gaussian_noise() {
+	double mean = 0, stddev = 0; //mean & standard deviation (stddev)
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_COLOR);
+
 	if (img.data) {
-		G_N(img);
+		cv::Mat image = img.clone();
+		std::cout << "\nThe recommended value for the mean is 1, for the standard deviation(stddev) is 128." << std::endl;
+		std::cout << "\nEnter the mean: ";
+		std::cin >> mean;
+		std::cout << "\nEnter the stddev: ";
+		std::cin >> stddev;
+
+		std::default_random_engine generator;
+		std::normal_distribution<double> dist(mean, stddev);
+
+		for (int y = img.rows; y >= 0; y--) {
+			for (int x = img.cols; x >= 0; x--) {
+				//For channel 0
+				if ((image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+					                     x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[0] + fabs(dist(generator))) > 255) {
+
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[0] = 255;
+				}
+				else if ((image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+					                          x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[0] + fabs(dist(generator)) < 0)) {
+
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[0] = 0;
+				}
+				else {
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[0] += fabs(dist(generator));
+				}
+
+				//For channel 1
+				if ((image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+					                     x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[1] + fabs(dist(generator))) > 255) {
+
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[1] = 255;
+				}
+				else if ((image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+					                          x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[1] + fabs(dist(generator)) < 0)) {
+
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[1] = 0;
+				}
+				else {
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[1] += fabs(dist(generator));
+				}
+
+				//For channel 2
+				if ((image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+					                     x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[2] + fabs(dist(generator))) > 255) {
+
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[2] = 255;
+				}
+				else if ((image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+					                                      x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[2] + fabs(dist(generator)) < 0)) {
+
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[2] = 0;
+				}
+				else {
+					image.at<cv::Vec3b>(y < 0 ? 0 : y >= img.rows ? img.rows - 1 : y,
+						                x < 0 ? 0 : x >= img.cols ? img.cols - 1 : x)[2] += fabs(dist(generator));
+				}
+			}
+		}
 		cv::namedWindow("image", cv::WINDOW_NORMAL);
-		cv::imshow("image", img);
+		cv::imshow("image", image);
 		cv::waitKey(1000);
-		save_file(img);
+		save_file(image);
 		cv::destroyWindow("image");
 	}
 	else {
 		text_output();
 	}
-}*/
+}
 
 
 
@@ -395,6 +444,7 @@ void G_F(cv::Mat& img, cv::Mat& image, int y, int x) {
 			sum += kernel[i][j];
 		}
 	}
+
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
 			kernel[i][j] /= sum;
@@ -542,7 +592,7 @@ void Median_filter() {
 
 void Sobel(cv::Mat& img, cv::Mat& image, int x, int y) {
 	int count = 0, second_count = 0;
-	double arr_P[3][3], Gx, Gy, f; 
+	double arr_P[3][3] = { 0 }, Gx, Gy, f;
 	for (int i = x - 1; i < x + 2; i++) {
 		for (int j = y - 1; j < y + 2; j++) {
 			arr_P[count][second_count] = img.at<uchar>(i < 0 ? 0 : i >= img.rows ? img.rows - 1 : i,
