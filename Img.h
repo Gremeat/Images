@@ -76,18 +76,16 @@ std::string open_file() {
 	wchar_t file[1024] = { 0 };
 	file[0] = '\0';
 	open_file.lpstrFilter = L".*jpg, .*jpeg";
-	open_file.lpstrFile = file;
+	open_file.lpstrFile = &file[0];
 	open_file.nMaxCustFilter = 1024;
 	open_file.nMaxFile = 1024;
 	open_file.Flags = OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 	if (GetOpenFileName(&open_file)) {
 		HWND owner = GetForegroundWindow();
-		std::wstring temp_wstring;
-		temp_wstring = &file[0];
+		std::wstring temp_wstring(file);
 		std::string picture_name;
 		picture_name.resize(temp_wstring.size());
 		std::transform(std::begin(temp_wstring), std::end(temp_wstring), std::begin(picture_name), wctob);
-		temp_wstring.resize(0);
 		if (DestroyWindow(owner)) {
 			exit(1);
 		}
@@ -96,7 +94,6 @@ std::string open_file() {
 		}
 	}
 	else {
-		std::cout << "\nOpening error!" << std::endl;
 		return "";
 	}
 }
@@ -108,7 +105,7 @@ void save_file(cv::Mat& img) {
 		wchar_t file[1024] = { 0 };
 		file[0] = '\0';
 		save_file.lpstrFilter = L".*jpg, .*jpeg";
-		save_file.lpstrFile = file;
+		save_file.lpstrFile = &file[0];
 		save_file.nMaxCustFilter = 1024;
 		save_file.nMaxFile = 1024;
 		save_file.Flags = OFN_ALLOWMULTISELECT | OFN_EXPLORER;
@@ -157,6 +154,7 @@ void Salt_Pepper() {
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
@@ -190,6 +188,7 @@ void Salt_Pepper(double prob) { //prob is pixels probability
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
@@ -248,6 +247,7 @@ void Salt_Pepper(double prob_w, double prob_b) { //prob_f_w(b) is probability of
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
@@ -313,6 +313,12 @@ void Gaussian_noise() {
 		std::cin >> mean;
 		std::cout << "\nEnter the stddev: ";
 		std::cin >> stddev;
+
+		if (!Comparison(stddev)) {
+			std::cout << "\nInvalid value for stddev!" << std::endl;
+			text_output();
+			return;
+		}
 
 		std::default_random_engine generator;
 		std::normal_distribution<double> dist(mean, stddev);
@@ -381,6 +387,7 @@ void Gaussian_noise() {
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
@@ -425,6 +432,7 @@ void Smoothing_filter() {
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
@@ -501,6 +509,7 @@ void Gaussian_filter() {
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
@@ -583,6 +592,7 @@ void Median_filter() {
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 	
@@ -626,18 +636,20 @@ void Border_selection_filter_Sobel() {
 		cv::destroyWindow("image");
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
 }
 
 
 
-/*void Equalizing_histogram() {
+void Equalizing_histogram() {
 	cv::Mat img = cv::imread(open_file(), cv::IMREAD_GRAYSCALE);
 	if (img.data) {
-		
+		exit(1);
 	}
 	else {
+		std::cout << "\nOpening error!" << std::endl;
 		text_output();
 	}
-}*/
+}
